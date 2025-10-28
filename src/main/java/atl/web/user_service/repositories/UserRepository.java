@@ -15,8 +15,6 @@ import atl.web.user_service.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Page<User> findAll(Pageable pageable);
-
     Optional<User> findUserByEmail(String email);
 
     Boolean existsByEmail(String email);

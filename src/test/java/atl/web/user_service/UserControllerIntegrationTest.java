@@ -115,7 +115,7 @@ class UserControllerIntegrationTest {
                 createResult.getResponse().getContentAsString(),
                 UserResponseDto.class);
 
-        MvcResult getResult = mockMvc.perform(get("/api/v1/users/id/{id}", createdUser.getId()))
+        MvcResult getResult = mockMvc.perform(get("/api/v1/users/{id}", createdUser.getId()))
                 .andReturn();
 
         UserResponseDto response = objectMapper.readValue(
@@ -150,7 +150,8 @@ class UserControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)));
 
-        MvcResult result = mockMvc.perform(get("/api/v1/users/email/{email}", "email@gmail.com"))
+        MvcResult result = mockMvc.perform(get("/api/v1/users")
+                .param("email","email@gmail.com"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -247,7 +248,7 @@ class UserControllerIntegrationTest {
                         .andExpect(status().isCreated());
             }
 
-            MvcResult result = mockMvc.perform(get("/api/v1/users/page")
+            MvcResult result = mockMvc.perform(get("/api/v1/users")
                 .param("page", "0")
                 .param("size", "3")
                 .param("sortBy", "name")
@@ -278,7 +279,7 @@ class UserControllerIntegrationTest {
                                 .andExpect(status().isCreated());
             }
 
-            MvcResult result = mockMvc.perform(get("/api/v1/users/page")
+            MvcResult result = mockMvc.perform(get("/api/v1/users")
                 .param("page", "0")
                 .param("size", "3")
                 .param("sortBy", "name")

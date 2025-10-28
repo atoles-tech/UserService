@@ -1,8 +1,5 @@
 package atl.web.user_service.controllers;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import atl.web.user_service.dto.CardInfoDto;
 import atl.web.user_service.dto.CardInfoResponseDto;
+import atl.web.user_service.dto.CardUpdateDto;
 import atl.web.user_service.exceptions.CardNotFoundException;
 import atl.web.user_service.services.CardInfoService;
 import jakarta.validation.Valid;
@@ -26,13 +24,13 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/cards")
+@RequestMapping("/api/v1")
 public class CardInfoController {
     
     private final CardInfoService cardInfoService;
 
     //create
-    @PostMapping("/user/{userId}")
+    @PostMapping("/users/{userId}/cards")
     public ResponseEntity<CardInfoResponseDto> createCard(@RequestBody @Valid CardInfoDto cardInfoDto,
                                                           @PathVariable Long userId){
         CardInfoResponseDto response = cardInfoService.createCardInfo(cardInfoDto, userId);
@@ -40,52 +38,51 @@ public class CardInfoController {
     }
 
     //update
-    @PutMapping("/{id}")
-    public ResponseEntity<CardInfoResponseDto> updateCard(@RequestBody @Valid CardInfoDto cardInfoDto,
+    @PutMapping("/cards/{id}")
+    public ResponseEntity<CardInfoResponseDto> updateCard(@RequestBody CardUpdateDto cardInfoDto,
                                                           @PathVariable Long id){
         CardInfoResponseDto response = cardInfoService.updateCardInfo(id, cardInfoDto);
         return ResponseEntity.ok(response);
     }
 
     //delete
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/cards/{id}")
     public ResponseEntity<?> deleteCard(@PathVariable Long id){
         cardInfoService.deleteCardInfo(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     //read
-    @GetMapping
-    public ResponseEntity<List<CardInfoResponseDto>> findAllCards(){
-        return ResponseEntity.ok(cardInfoService.findAll());
-    }
-
-    @GetMapping("/page/{userId}")
-    public ResponseEntity<Page<CardInfoResponseDto>> findByUserIdCardsPage(
+    @GetMapping("/users/{userId}/cards")
+    public ResponseEntity<?> findByUserIdCardsPage(
+        @RequestParam(required = false) String number,
         @RequestParam(defaultValue = "0") Integer page,
-        @RequestParam(defaultValue = "10") Integer size,
+        @RequestParam(defaultValue = "0") Integer size,
         @RequestParam(defaultValue = "holder") String sortBy,
         @RequestParam(defaultValue = "asc") String direction,
         @PathVariable Long userId){
-        
+
+        if(number != null){
+            return ResponseEntity.ok(cardInfoService.findByNumber(number));
+        }
+
+        if(size == 0){
+            return ResponseEntity.ok(cardInfoService.findAll());
+        }
+
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
         return ResponseEntity.ok(cardInfoService.findByUserId(userId,PageRequest.of(page, size, sort)));
     }
 
-    @GetMapping("/number/{number}")
-    public ResponseEntity<CardInfoResponseDto> findByNumber(@PathVariable String number){
+    @GetMapping("/cards")
+    public ResponseEntity<CardInfoResponseDto> findByNumber(@RequestParam String number){
         return ResponseEntity.ok(cardInfoService.findByNumber(number).orElseThrow(()->new CardNotFoundException(number)));
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/cards/{id}")
     public ResponseEntity<CardInfoResponseDto> findById(@PathVariable Long id){
         return ResponseEntity.ok(cardInfoService.findById(id).orElseThrow(()->new CardNotFoundException(id)));
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CardInfoResponseDto>> findByUser(@PathVariable Long userId){
-        return ResponseEntity.ok(cardInfoService.findByUserId(userId));
     }
 
 }

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import atl.web.user_service.dto.CardInfoDto;
 import atl.web.user_service.dto.CardInfoResponseDto;
+import atl.web.user_service.dto.CardUpdateDto;
 import atl.web.user_service.dto.UserResponseDto;
 import atl.web.user_service.exceptions.CardNotFoundException;
 import atl.web.user_service.exceptions.CardNumberAlreadyExistsException;
@@ -31,7 +32,7 @@ import atl.web.user_service.model.User;
 import atl.web.user_service.repositories.CardInfoRepository;
 import atl.web.user_service.services.CardInfoService;
 import atl.web.user_service.services.UserService;
-
+    
 @ExtendWith(MockitoExtension.class)
 public class CardInfoServiceTest {
 
@@ -194,7 +195,7 @@ public class CardInfoServiceTest {
     @Test
     @DisplayName("Should update and return card")
     void updateCardInfo_ShouldReturnCard() {
-        CardInfoDto ci = new CardInfoDto("1234567812345678", "name_surname", LocalDate.of(1000, 10, 10));
+        CardUpdateDto ci = new CardUpdateDto("1234567812345678", "name_surname", LocalDate.of(1000, 10, 10));
         CardInfoResponseDto responseDto = new CardInfoResponseDto(1L, 1L, "1234567812345678", "name_surname",
                 LocalDate.of(1000, 10, 10));
         when(cardInfoRepository.findById(1L)).thenReturn(Optional.of(cardInfo));
@@ -211,13 +212,17 @@ public class CardInfoServiceTest {
     void updateCardInfo_ShouldThrowException_WhenCardNotFound() {
         when(cardInfoRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(CardNotFoundException.class, () -> cardInfoService.updateCardInfo(1L, cardInfoDto));
+        assertThrows(CardNotFoundException.class, () -> cardInfoService.updateCardInfo(1L, CardUpdateDto.builder()
+                .number("1234567812345678")
+                .holder("name_surname")
+                .expirationDate(LocalDate.of(2027, 10, 10))
+                .build()));
     }
 
     @Test
     @DisplayName("Should throw exception if number exists")
     void updateCardInfo_ShouldThrowException_WhenCardNumberExists() {
-        CardInfoDto ci = new CardInfoDto("987654329765432", "name_surname", LocalDate.of(1000, 10, 10));
+        CardUpdateDto ci = new CardUpdateDto("987654329765432", "name_surname", LocalDate.of(1000, 10, 10));
         when(cardInfoRepository.findById(1L)).thenReturn(Optional.of(cardInfo));
         when(cardInfoRepository.existsByNumber("987654329765432")).thenReturn(true);
 

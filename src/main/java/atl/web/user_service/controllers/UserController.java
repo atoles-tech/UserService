@@ -2,7 +2,6 @@ package atl.web.user_service.controllers;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -53,32 +52,31 @@ public class UserController {
     }
 
     // read
-    @GetMapping("/page")
-    public ResponseEntity<Page<UserResponseDto>> findUsersByPage(
+    @GetMapping
+    public ResponseEntity<?> findUsersByPage(
+            @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "0") Integer size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
+
+        if(email != null){
+            return ResponseEntity.ok(userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email)));
+        }
+        
+        if(size == 0){
+            return ResponseEntity.ok(userService.findAllUsers());
+        }
 
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
         return ResponseEntity.ok(userService.findAllUsers(PageRequest.of(page, size, sort)));
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> findAllUsers() {
-        return ResponseEntity.ok(userService.findAllUsers());
-    }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<UserResponseDto> findUserByEmail(@PathVariable String email){
-        return ResponseEntity.ok(userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email)));
-    }
-
 
 }

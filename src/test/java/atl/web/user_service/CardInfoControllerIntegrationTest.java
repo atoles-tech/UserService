@@ -97,7 +97,7 @@ class CardInfoControllerIntegrationTest {
         return user.getId();
     }
 
-    @Test
+     @Test
     @DisplayName("Should create card for user")
     void createCard_ShouldCreateCardForUser() throws Exception {
         Long userId = createTestUser("user@gmail.com");
@@ -107,7 +107,7 @@ class CardInfoControllerIntegrationTest {
                 .expirationDate(LocalDate.of(2027, 12, 12))
                 .build();
 
-        MvcResult result = mockMvc.perform(post("/api/v1/cards/user/{userId}", userId)
+        MvcResult result = mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cardDto)))
                 .andExpect(status().isOk())
@@ -127,7 +127,7 @@ class CardInfoControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return card for user if it exists")
+    @DisplayName("Should return card by id")
     void getCardById_ShouldReturnCard_WhenCardExists() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
@@ -136,7 +136,7 @@ class CardInfoControllerIntegrationTest {
                 .expirationDate(LocalDate.of(2027, 12, 12))
                 .build();
 
-        MvcResult createResult = mockMvc.perform(post("/api/v1/cards/user/{userId}", userId)
+        MvcResult createResult = mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cardDto)))
                 .andReturn();
@@ -145,7 +145,7 @@ class CardInfoControllerIntegrationTest {
                 createResult.getResponse().getContentAsString(),
                 CardInfoResponseDto.class);
 
-        MvcResult getResult = mockMvc.perform(get("/api/v1/cards/id/{id}", createdCard.getId()))
+        MvcResult getResult = mockMvc.perform(get("/api/v1/cards/{id}", createdCard.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -176,23 +176,22 @@ class CardInfoControllerIntegrationTest {
                 .expirationDate(LocalDate.of(2026, 6, 6))
                 .build();
 
-        mockMvc.perform(post("/api/v1/cards/user/{userId}", userId)
+        mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(card1)));
 
-        mockMvc.perform(post("/api/v1/cards/user/{userId}", userId)
+        mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(card2)));
 
-        MvcResult result = mockMvc.perform(get("/api/v1/cards/user/{userId}", userId))
+        MvcResult result = mockMvc.perform(get("/api/v1/users/{userId}/cards", userId))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String responseJson = result.getResponse().getContentAsString();
         List<CardInfoResponseDto> cards = objectMapper.readValue(
                 responseJson,
-                new TypeReference<List<CardInfoResponseDto>>() {
-                });
+                new TypeReference<List<CardInfoResponseDto>>() {});
 
         assertEquals(2, cards.size());
         
@@ -208,7 +207,94 @@ class CardInfoControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should update card if it exists")
+    @DisplayName("Should return paginated cards for user")
+    void getCardsByUserId_ShouldReturnPaginatedCards() throws Exception {
+        Long userId = createTestUser("user@gmail.com");
+
+        CardInfoDto card1 = CardInfoDto.builder()
+                .number("1234567812345678")
+                .holder("name surname")
+                .expirationDate(LocalDate.of(2027, 12, 12))
+                .build();
+
+        CardInfoDto card2 = CardInfoDto.builder()
+                .number("8765432187654321")
+                .holder("name surname")
+                .expirationDate(LocalDate.of(2026, 6, 6))
+                .build();
+
+        mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(card1)));
+
+        mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(card2)));
+
+        MvcResult result = mockMvc.perform(get("/api/v1/users/{userId}/cards?page=0&size=1", userId))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseJson = result.getResponse().getContentAsString();
+        assertNotNull(responseJson);
+    }
+
+    @Test
+    @DisplayName("Should return card by number for user")
+    void getCardsByUserId_ShouldReturnCardByNumber() throws Exception {
+        Long userId = createTestUser("user@gmail.com");
+
+        CardInfoDto cardDto = CardInfoDto.builder()
+                .number("1234567812345678")
+                .holder("name surname")
+                .expirationDate(LocalDate.of(2027, 12, 12))
+                .build();
+
+        mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(cardDto)));
+
+        MvcResult result = mockMvc.perform(get("/api/v1/users/{userId}/cards?number=1234567812345678", userId))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        CardInfoResponseDto response = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                CardInfoResponseDto.class);
+
+        assertEquals("1234567812345678", response.getNumber());
+        assertEquals(userId, response.getUserId());
+    }
+
+    @Test
+    @DisplayName("Should return card by number globally")
+    void getCardByNumber_ShouldReturnCard() throws Exception {
+        Long userId = createTestUser("user@gmail.com");
+
+        CardInfoDto cardDto = CardInfoDto.builder()
+                .number("1234567812345678")
+                .holder("name surname")
+                .expirationDate(LocalDate.of(2027, 12, 12))
+                .build();
+
+        mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(cardDto)));
+
+        MvcResult result = mockMvc.perform(get("/api/v1/cards?number=1234567812345678"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        CardInfoResponseDto response = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                CardInfoResponseDto.class);
+
+        assertEquals("1234567812345678", response.getNumber());
+        assertEquals(userId, response.getUserId());
+    }
+
+    @Test
+    @DisplayName("Should update card")
     void updateCard_ShouldUpdateCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto createDto = CardInfoDto.builder()
@@ -217,7 +303,7 @@ class CardInfoControllerIntegrationTest {
                 .expirationDate(LocalDate.of(2027, 10, 10))
                 .build();
 
-        MvcResult createResult = mockMvc.perform(post("/api/v1/cards/user/{userId}", userId)
+        MvcResult createResult = mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
                 .andReturn();
@@ -250,7 +336,7 @@ class CardInfoControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should delete card by id")
+    @DisplayName("Should delete card")
     void deleteCard_ShouldDeleteCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
@@ -259,7 +345,7 @@ class CardInfoControllerIntegrationTest {
                 .expirationDate(LocalDate.of(2027, 12, 12))
                 .build();
 
-        MvcResult createResult = mockMvc.perform(post("/api/v1/cards/user/{userId}", userId)
+        MvcResult createResult = mockMvc.perform(post("/api/v1/users/{userId}/cards", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cardDto)))
                 .andReturn();
@@ -272,7 +358,7 @@ class CardInfoControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/v1/cards/{id}", createdCard.getId()))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isNotFound());
     }
 
 }
