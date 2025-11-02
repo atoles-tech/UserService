@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -97,8 +98,9 @@ class CardInfoControllerIntegrationTest {
         return user.getId();
     }
 
-     @Test
+    @Test
     @DisplayName("Should create card for user")
+    @WithMockUser(roles = "ADMIN")
     void createCard_ShouldCreateCardForUser() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
@@ -128,6 +130,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return card by id")
+    @WithMockUser(roles = "ADMIN")
     void getCardById_ShouldReturnCard_WhenCardExists() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
@@ -161,6 +164,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return all cards for user")
+    @WithMockUser(roles = "ADMIN")
     void getCardsByUserId_ShouldReturnUserCards() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -208,6 +212,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return paginated cards for user")
+    @WithMockUser(roles = "ADMIN")
     void getCardsByUserId_ShouldReturnPaginatedCards() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -241,6 +246,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return card by number for user")
+    @WithMockUser(roles = "ADMIN")
     void getCardsByUserId_ShouldReturnCardByNumber() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -268,6 +274,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return card by number globally")
+    @WithMockUser(roles = "ADMIN")
     void getCardByNumber_ShouldReturnCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -295,6 +302,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should update card")
+    @WithMockUser(roles = "ADMIN")
     void updateCard_ShouldUpdateCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto createDto = CardInfoDto.builder()
@@ -337,6 +345,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should delete card")
+    @WithMockUser(roles = "ADMIN")
     void deleteCard_ShouldDeleteCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()

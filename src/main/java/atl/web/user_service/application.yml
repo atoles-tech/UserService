@@ -1,0 +1,26 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: auth_service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_service
+    username: postgres
+    password: admin
+  
+  liquibase: 
+    change-log: classpath:db/changelog/db.master-changelog.xml
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: c3VwZXJTZWN1cmVTZWNyZXRLZXlGb3JKV1RDb25maWd1cmF0aW9uMTIz
+  access-exp: 900000
+  refresh-exp: 604800000

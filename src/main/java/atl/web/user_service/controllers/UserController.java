@@ -1,11 +1,10 @@
 package atl.web.user_service.controllers;
 
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,6 +38,7 @@ public class UserController {
 
     //delete
     @DeleteMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id == authentication.principal)")
     public ResponseEntity<?> deleteUser(@PathVariable Long id){
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -46,6 +46,7 @@ public class UserController {
 
     //update
     @PutMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id == authentication.principal)")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserDto userDto){
         UserResponseDto response = userService.updateUser(id, userDto);
         return ResponseEntity.ok(response);
@@ -53,6 +54,7 @@ public class UserController {
 
     // read
     @GetMapping
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<?> findUsersByPage(
             @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "0") Integer page,
@@ -75,6 +77,7 @@ public class UserController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id == authentication.principal)")
     public ResponseEntity<UserResponseDto> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }
