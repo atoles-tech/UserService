@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/user_service
-    username: postgres
-    password: admin
+    url: ${DB_URL_DOCKER}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     
   data:
@@ -19,3 +19,6 @@ spring:
 
   jpa:
     show-sql: false
+
+jwt:
+  secret: ${JWT_SECRET}
