@@ -32,7 +32,7 @@ public class CardInfoController {
 
     //create
     @PostMapping("/users/{userId}/cards")
-    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #userId == authentication.principal)")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and hasRole('USER') and #userId.toString() == authentication.name)")
     public ResponseEntity<CardInfoResponseDto> createCard(@RequestBody @Valid CardInfoDto cardInfoDto,
                                                           @PathVariable Long userId){
         CardInfoResponseDto response = cardInfoService.createCardInfo(cardInfoDto, userId);
