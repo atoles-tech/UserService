@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import atl.web.user_service.client.AuthServiceClient;
+import atl.web.user_service.dto.ValidateTokenRequestDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,17 +23,20 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
-    private JwtUtils jwtUtils;
+    private AuthServiceClient authServiceClient;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
         String jwt = parseJwt(request);
-        if (jwt != null && jwtUtils.validateToken(jwt)) {
-            String username = jwtUtils.getUsernameFromToken(jwt);
 
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(jwtUtils.getRoleFromToken(jwt))); 
+        ValidateTokenRequestDto jwtRequest = new ValidateTokenRequestDto(jwt);
+
+        if (jwt != null && authServiceClient.validateToken(jwtRequest)) {
+            String username = authServiceClient.extractUsername(jwtRequest);
+
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authServiceClient.extractRole(jwtRequest))); 
             
             UsernamePasswordAuthenticationToken authentication = 
                 new UsernamePasswordAuthenticationToken(username, null, authorities);
@@ -45,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         
     }
 
-     private String parseJwt(HttpServletRequest request) {
+    private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
         
         if (headerAuth != null && headerAuth.startsWith("Bearer ") && headerAuth.length() > 7) {

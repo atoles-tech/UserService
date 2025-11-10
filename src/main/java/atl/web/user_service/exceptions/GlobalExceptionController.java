@@ -12,6 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import feign.FeignException;
+
 @ControllerAdvice
 public class GlobalExceptionController {
     
@@ -45,6 +47,16 @@ public class GlobalExceptionController {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+     @ExceptionHandler(FeignException.Conflict.class)
+    public ResponseEntity<?> handleFeignException(FeignException.Conflict ex){
+        return new ResponseEntity<>(ex.contentUTF8(), HttpStatus.valueOf(409));
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<?> handleFeignException(FeignException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
