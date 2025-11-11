@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import atl.web.user_service.dto.CardInfoDto;
 import atl.web.user_service.dto.CardInfoResponseDto;
 import atl.web.user_service.dto.CardUpdateDto;
+import atl.web.user_service.dto.UserResponseDto;
 import atl.web.user_service.exceptions.CardNotFoundException;
 import atl.web.user_service.exceptions.CardNumberAlreadyExistsException;
 import atl.web.user_service.exceptions.UserNotFoundException;
@@ -96,5 +97,13 @@ public class CardInfoService {
             throw new CardNotFoundException(id);
         }
         cardInfoRepository.deleteById(id);
+    }
+
+    public Boolean isCardOwner(Long cardId, Long userId){
+        Optional<CardInfo> card = cardInfoRepository.findById(cardId);
+        Optional<UserResponseDto> user = userService.findUserById(userId);
+
+        return card.isPresent() && user.isPresent()
+                && card.get().getUser().getId().equals(user.get().getId());
     }
 }

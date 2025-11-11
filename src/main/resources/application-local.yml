@@ -19,3 +19,10 @@ spring:
 
   jpa:
     show-sql: false
+
+jwt:
+  secret: c3VwZXJTZWN1cmVTZWNyZXRLZXlGb3JKV1RDb25maWd1cmF0aW9uMTIz
+
+auth:
+  service:
+    url: http://localhost:8082

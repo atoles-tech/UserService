@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,7 @@ public class CardInfoController {
 
     //create
     @PostMapping("/users/{userId}/cards")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and hasRole('USER') and #userId.toString() == authentication.name)")
     public ResponseEntity<CardInfoResponseDto> createCard(@RequestBody @Valid CardInfoDto cardInfoDto,
                                                           @PathVariable Long userId){
         CardInfoResponseDto response = cardInfoService.createCardInfo(cardInfoDto, userId);
@@ -39,6 +41,7 @@ public class CardInfoController {
 
     //update
     @PutMapping("/cards/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @cardInfoService.isCardOwner(#id,authentication.principal))")
     public ResponseEntity<CardInfoResponseDto> updateCard(@RequestBody CardUpdateDto cardInfoDto,
                                                           @PathVariable Long id){
         CardInfoResponseDto response = cardInfoService.updateCardInfo(id, cardInfoDto);
@@ -47,6 +50,7 @@ public class CardInfoController {
 
     //delete
     @DeleteMapping("/cards/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @cardInfoService.isCardOwner(#id,authentication.principal))")
     public ResponseEntity<?> deleteCard(@PathVariable Long id){
         cardInfoService.deleteCardInfo(id);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -54,6 +58,7 @@ public class CardInfoController {
 
     //read
     @GetMapping("/users/{userId}/cards")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<?> findByUserIdCardsPage(
         @RequestParam(required = false) String number,
         @RequestParam(defaultValue = "0") Integer page,
@@ -76,11 +81,13 @@ public class CardInfoController {
     }
 
     @GetMapping("/cards")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<CardInfoResponseDto> findByNumber(@RequestParam String number){
         return ResponseEntity.ok(cardInfoService.findByNumber(number).orElseThrow(()->new CardNotFoundException(number)));
     }
 
     @GetMapping("/cards/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @cardInfoService.isCardOwner(#id,authentication.principal))")
     public ResponseEntity<CardInfoResponseDto> findById(@PathVariable Long id){
         return ResponseEntity.ok(cardInfoService.findById(id).orElseThrow(()->new CardNotFoundException(id)));
     }

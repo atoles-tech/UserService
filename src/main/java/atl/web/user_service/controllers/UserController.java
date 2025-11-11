@@ -1,11 +1,10 @@
 package atl.web.user_service.controllers;
 
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,22 +36,25 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    //delete
+    // delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id){
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id.toString() == authentication.name)")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    //update
+    // update
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserDto userDto){
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id.toString() == authentication.name)")
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserDto userDto) {
         UserResponseDto response = userService.updateUser(id, userDto);
         return ResponseEntity.ok(response);
     }
 
     // read
     @GetMapping
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<?> findUsersByPage(
             @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "0") Integer page,
@@ -60,11 +62,12 @@ public class UserController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String direction) {
 
-        if(email != null){
-            return ResponseEntity.ok(userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email)));
+        if (email != null) {
+            return ResponseEntity
+                    .ok(userService.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email)));
         }
-        
-        if(size == 0){
+
+        if (size == 0) {
             return ResponseEntity.ok(userService.findAllUsers());
         }
 
@@ -73,8 +76,8 @@ public class UserController {
         return ResponseEntity.ok(userService.findAllUsers(PageRequest.of(page, size, sort)));
     }
 
-
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and #id.toString() == authentication.name)")
     public ResponseEntity<UserResponseDto> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }
