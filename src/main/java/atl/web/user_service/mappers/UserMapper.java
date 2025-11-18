@@ -20,6 +20,7 @@ public interface UserMapper {
 
     @Mapping(target = "cards", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "email", ignore = true)
     User toUser(UserDto userDto);
 
     List<UserResponseDto> toUserResponseDtoList(List<User> users);

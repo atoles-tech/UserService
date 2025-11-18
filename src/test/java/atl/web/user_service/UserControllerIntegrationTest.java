@@ -22,6 +22,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 
 import java.time.LocalDate;
 
@@ -72,13 +73,12 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should create and return user")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void createUser_ShouldCreateAndReturnUser() throws Exception {
                 UserDto userDto = UserDto.builder()
                                 .name("Name")
                                 .surname("Surname")
                                 .birthDate(LocalDate.of(1000, 1, 1))
-                                .email("email@gmail.com")
                                 .build();
 
                 MvcResult result = mockMvc.perform(post("/api/v1/users")
@@ -99,13 +99,12 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should return user if it exists")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void getUserById_ShouldReturnUser_WhenUserExists() throws Exception {
                 UserDto userDto = UserDto.builder()
                                 .name("Name")
                                 .surname("Surname")
                                 .birthDate(LocalDate.of(1000, 1, 1))
-                                .email("email@gmail.com")
                                 .build();
 
                 MvcResult createResult = mockMvc.perform(post("/api/v1/users")
@@ -133,7 +132,7 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should return errorResponse if user not exists")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void getUserById_ShouldReturnError_WhenUserNotFound() throws Exception {
                 mockMvc.perform(get("/api/v1/users/id/{id}", 999L))
                                 .andExpect(status().isNotFound());
@@ -141,13 +140,12 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should return user by email")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void getUserByEmail_ShouldReturnUser_WhenEmailExists() throws Exception {
                 UserDto userDto = UserDto.builder()
                                 .name("name")
                                 .surname("surname")
                                 .birthDate(LocalDate.of(1000, 1, 1))
-                                .email("email@gmail.com")
                                 .build();
 
                 mockMvc.perform(post("/api/v1/users")
@@ -168,13 +166,12 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should update user if it exists")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void updateUser_ShouldUpdateAndReturnUser() throws Exception {
                 UserDto userDto = UserDto.builder()
                                 .name("name")
                                 .surname("surname")
                                 .birthDate(LocalDate.of(1000, 1, 1))
-                                .email("email@gmail.com")
                                 .build();
 
                 MvcResult createResult = mockMvc.perform(post("/api/v1/users")
@@ -190,7 +187,6 @@ class UserControllerIntegrationTest {
                                 .name("name")
                                 .surname("sname")
                                 .birthDate(LocalDate.of(2000, 1, 1))
-                                .email("email@gmail.com")
                                 .build();
 
                 MvcResult updateResult = mockMvc.perform(put("/api/v1/users/{id}", createdUser.getId())
@@ -211,13 +207,12 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should delete user if it exists")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void deleteUser_ShouldDeleteUser() throws Exception {
                 UserDto userDto = UserDto.builder()
                                 .name("name")
                                 .surname("surname")
                                 .birthDate(LocalDate.of(1000, 1, 1))
-                                .email("email@gmail.com")
                                 .build();
 
                 MvcResult createResult = mockMvc.perform(post("/api/v1/users")
@@ -238,19 +233,19 @@ class UserControllerIntegrationTest {
 
         @Test
         @DisplayName("Should return paginated users sorted by name ascending")
-        @WithMockUser(roles = "ADMIN")
+        @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
         void findUsersByPage_ShouldReturnPaginatedList_SortedAsc() throws Exception {
                 for (int i = 1; i <= 5; i++) {
                         UserDto user = UserDto.builder()
                                         .name("User" + i)
                                         .surname("Surname" + i)
                                         .birthDate(LocalDate.of(2000, 1, i))
-                                        .email("user" + i + "@example.com")
                                         .build();
 
                         mockMvc.perform(post("/api/v1/users")
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(user)))
+                                        .content(objectMapper.writeValueAsString(user))
+                                        .with(SecurityMockMvcRequestPostProcessors.user("email" + i + "@gmail.com")))
                                         .andExpect(status().isCreated());
                 }
 
@@ -277,12 +272,12 @@ class UserControllerIntegrationTest {
                                         .name("User" + i)
                                         .surname("Surname" + i)
                                         .birthDate(LocalDate.of(2000, 1, i))
-                                        .email("user" + i + "@example.com")
                                         .build();
 
                         mockMvc.perform(post("/api/v1/users")
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(user)))
+                                        .content(objectMapper.writeValueAsString(user))
+                                        .with(SecurityMockMvcRequestPostProcessors.user("email" + i + "@gmail.com")))
                                         .andExpect(status().isCreated());
                 }
 

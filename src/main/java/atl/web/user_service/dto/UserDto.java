@@ -2,7 +2,6 @@ package atl.web.user_service.dto;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,8 +23,4 @@ public class UserDto {
 
     @NotNull(message = "Date of birth is required")
     private LocalDate birthDate;
-
-    @NotBlank(message = "Email is required")
-    @Email
-    private String email;
 }

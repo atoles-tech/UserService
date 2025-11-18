@@ -20,6 +20,7 @@ import atl.web.user_service.dto.CardInfoResponseDto;
 import atl.web.user_service.dto.CardUpdateDto;
 import atl.web.user_service.exceptions.CardNotFoundException;
 import atl.web.user_service.services.CardInfoService;
+import atl.web.user_service.services.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -29,10 +30,11 @@ import lombok.AllArgsConstructor;
 public class CardInfoController {
     
     private final CardInfoService cardInfoService;
+    private final UserService userService;
 
     //create
     @PostMapping("/users/{userId}/cards")
-    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and hasRole('USER') and #userId.toString() == authentication.name)")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @userService.getEmailById(#userId) == authentication.name)")
     public ResponseEntity<CardInfoResponseDto> createCard(@RequestBody @Valid CardInfoDto cardInfoDto,
                                                           @PathVariable Long userId){
         CardInfoResponseDto response = cardInfoService.createCardInfo(cardInfoDto, userId);
