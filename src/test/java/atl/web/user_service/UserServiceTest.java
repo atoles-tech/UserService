@@ -94,7 +94,6 @@ public class UserServiceTest {
                 .name("name")
                 .surname("surname")
                 .birthDate(LocalDate.of(1, 2, 2))
-                .email("evgenijkhodosok@gmail.com")
                 .build();
     }
 
@@ -154,7 +153,7 @@ public class UserServiceTest {
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toUserResponseDto(user)).thenReturn(userResponseDto);
 
-        UserResponseDto result = userService.createUser(userDto);
+        UserResponseDto result = userService.createUser(userDto, "evgenijkhodosok@gmail.com");
 
         assertEquals(userResponseDto, result);
     }
@@ -164,7 +163,7 @@ public class UserServiceTest {
     void createUser_ShouldThrowException_WhenEmailExist() {
         when(userRepository.existsByEmail("evgenijkhodosok@gmail.com")).thenReturn(true);
 
-        assertThrows(EmailAlreadyExistsException.class, () -> userService.createUser(userDto));
+        assertThrows(EmailAlreadyExistsException.class, () -> userService.createUser(userDto, "evgenijkhodosok@gmail.com"));
     }
 
     @Test
@@ -178,7 +177,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("Should update and return updated user")
     void updateUser_ShouldReturnUserResponse() {
-        UserDto uDto = new UserDto("name", "surname", LocalDate.of(100, 2, 2), "evgenijkhodosok@gmail.com");
+        UserDto uDto = new UserDto("name", "surname", LocalDate.of(100, 2, 2));
         UserResponseDto uResponseDto = new UserResponseDto(1L, "name", "surname", LocalDate.of(100, 2, 2),
                 "evgenijkhodosok@gmail.com", List.of(cardInfoResponseDto));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -199,13 +198,4 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, userDto));
     }
 
-    @Test
-    @DisplayName("Should throw exception if email exists")
-    void updateUser_ShouldThrowException_WhenEmailExists() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.existsByEmail("email@gmail.com")).thenReturn(true);
-        userDto.setEmail("email@gmail.com");
-
-        assertThrows(EmailAlreadyExistsException.class, () -> userService.updateUser(1L, userDto));
-    }
 }

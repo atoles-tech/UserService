@@ -52,12 +52,13 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto createUser(UserDto userDto) {
+    public UserResponseDto createUser(UserDto userDto, String email) {
 
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new EmailAlreadyExistsException(userDto.getEmail());
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException(email);
         }
         User user = userMapper.toUser(userDto);
+        user.setEmail(email);
         userRepository.save(user);
         return userMapper.toUserResponseDto(user);
     }
@@ -80,20 +81,19 @@ public class UserService {
         User currentUser = userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException(id));
 
-        if (!currentUser.getEmail().equals(userDetails.getEmail()) &&
-                userRepository.existsByEmail(userDetails.getEmail())) {
-            throw new EmailAlreadyExistsException(userDetails.getEmail());
-        }
-
         currentUser.setName(userDetails.getName());
         currentUser.setSurname(userDetails.getSurname());
         currentUser.setBirthDate(userDetails.getBirthDate());
-        currentUser.setEmail(userDetails.getEmail());
 
         userRepository.save(currentUser);
 
         return userMapper.toUserResponseDto(currentUser);
     }
+
+    // util
+    public String getEmailById(Long id){
+        return userRepository.findById(id).orElseThrow(()->new UserNotFoundException(id)).getEmail();
+    }  
 
     // ENTITY
 

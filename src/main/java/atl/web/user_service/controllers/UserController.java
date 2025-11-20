@@ -1,5 +1,7 @@
 package atl.web.user_service.controllers;
 
+import java.security.Principal;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -31,14 +33,14 @@ public class UserController {
 
     // create
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserDto userDto) {
-        UserResponseDto response = userService.createUser(userDto);
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserDto userDto, Principal principal) {
+        UserResponseDto response = userService.createUser(userDto, principal.getName());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // delete
     @DeleteMapping("/{id}")
-    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id.toString() == authentication.name)")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @userService.getEmailById(#id) == authentication.name)")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -46,7 +48,7 @@ public class UserController {
 
     // update
     @PutMapping("/{id}")
-    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #id.toString() == authentication.name)")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and @userService.getEmailById(#id) == authentication.name)")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserDto userDto) {
         UserResponseDto response = userService.updateUser(id, userDto);
         return ResponseEntity.ok(response);
@@ -54,7 +56,7 @@ public class UserController {
 
     // read
     @GetMapping
-    @PreAuthorize(value = "hasRole('ADMIN')")
+    @PreAuthorize(value = "hasRole('ADMIN') or (hasRole('USER') and #email != null and authentication.name == #email)")
     public ResponseEntity<?> findUsersByPage(
             @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "0") Integer page,
@@ -77,7 +79,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and #id.toString() == authentication.name)")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userService.getEmailById(#id) == authentication.name)")
     public ResponseEntity<UserResponseDto> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }

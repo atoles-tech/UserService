@@ -84,7 +84,6 @@ class CardInfoControllerIntegrationTest {
                 .name("name")
                 .surname("surname")
                 .birthDate(LocalDate.of(1000, 1, 1))
-                .email(email)
                 .build();
 
         MvcResult result = mockMvc.perform(post("/api/v1/users")
@@ -100,7 +99,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should create card for user")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void createCard_ShouldCreateCardForUser() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
@@ -130,7 +129,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return card by id")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void getCardById_ShouldReturnCard_WhenCardExists() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
@@ -164,7 +163,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return all cards for user")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void getCardsByUserId_ShouldReturnUserCards() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -212,7 +211,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return paginated cards for user")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void getCardsByUserId_ShouldReturnPaginatedCards() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -246,7 +245,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return card by number for user")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void getCardsByUserId_ShouldReturnCardByNumber() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -274,7 +273,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should return card by number globally")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void getCardByNumber_ShouldReturnCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
 
@@ -302,7 +301,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should update card")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void updateCard_ShouldUpdateCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto createDto = CardInfoDto.builder()
@@ -345,7 +344,7 @@ class CardInfoControllerIntegrationTest {
 
     @Test
     @DisplayName("Should delete card")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "email@gmail.com", roles = "ADMIN")
     void deleteCard_ShouldDeleteCard() throws Exception {
         Long userId = createTestUser("user@gmail.com");
         CardInfoDto cardDto = CardInfoDto.builder()
